@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学生学业分析可视化</title>
+    <!-- ECharts库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+	<script src="https://d3js.org/d3.v6.min.js"></script>
+
+    <!-- 引入样式 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            margin-bottom: 50px;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>学生学业分析可视化</h1>
+
+    <!-- 图表1: 学业结果分布 -->
+    <h2>学业结果分布</h2>
+    <div id="chart1" class="chart-container"></div>
+
+    <!-- 图表2: 入学成绩与学业结果的关系 -->
+    <h2>入学成绩与学业结果的关系</h2>
+    <div id="chart2" class="chart-container"></div>
+
+    <!-- 图表3: 第一、二学期成绩与学业结果的关系 -->
+    <h2>第一、二学期成绩与学业结果的关系</h2>
+    <div id="chart3" class="chart-container"></div>
+
+    <!-- 图表4: 奖学金与学业结果的关系 -->
+    <h2>奖学金与学业结果的关系</h2>
+    <div id="chart4" class="chart-container"></div>
+
+    <!-- 图表5: 学生年龄与学业结果的关系 -->
+    <h2>学生年龄与学业结果的关系</h2>
+    <div id="chart5" class="chart-container"></div>
+
+    <!-- 图表6: 母亲学历与学业结果的关系 -->
+    <h2>母亲学历与学业结果的关系</h2>
+    <div id="chart6" class="chart-container"></div>
+
+    <!-- 图表7: 父亲学历与学业结果的关系 -->
+    <h2>父亲学历与学业结果的关系</h2>
+    <div id="chart7" class="chart-container"></div>
+
+    <!-- 图表8: 母亲职业与学业结果的关系 -->
+    <h2>母亲职业与学业结果的关系</h2>
+    <div id="chart8" class="chart-container"></div>
+
+    <!-- 图表9: 父亲职业与学业结果的关系 -->
+    <h2>父亲职业与学业结果的关系</h2>
+    <div id="chart9" class="chart-container"></div>
+
+    <!-- 图表10: 课程数量与学期成绩的关系 -->
+    <h2>课程数量与学期成绩的关系</h2>
+    <div id="chart10" class="chart-container"></div>
+
+    <!-- 图表11: 学业结果与失业率的关系 -->
+    <h2>学业结果与失业率的关系</h2>
+    <div id="chart11" class="chart-container"></div>
+
+    <!-- 图表12: 学业结果与通货膨胀率的关系 -->
+    <h2>学业结果与通货膨胀率的关系</h2>
+    <div id="chart12" class="chart-container"></div>
+
+    <!-- 图表13: 学业结果与GDP的关系 -->
+    <h2>学业结果与GDP的关系</h2>
+    <div id="chart13" class="chart-container"></div>
+
+    <!-- JavaScript代码 -->
+    <script>
+        // 定义一个函数来初始化图表
+		function initChart(chartId, option) {
+			var chart = echarts.init(document.getElementById(chartId)); // 初始化图表
+			chart.setOption(option); // 设置图表选项
+			window.addEventListener('resize', function(){
+				chart.resize(); // 窗口调整时，自动调整图表大小
+			});
+		}
+
+        // 图表1: 学业结果分布
+        fetch('j1.json')
+            .then(response => response.json())
+            .then(data => {
+                var option = {
+                    title: {
+                        text: '学业结果分布',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left'
+                    },
+                    series: [
+                        {
+                            name: '学业结果',
+                            type: 'pie',
+                            radius: '50%',
+                            data: data.map(item => ({
+                                value: item.count,
+                                name: item.Target
+                            })),
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                initChart('chart1', option);
+            });
+
+        // 图表2: 入学成绩与学业结果的关系
+        fetch('j2.json')
+            .then(response => response.json())
+            .then(data => {
+                var option = {
+                    title: { text: '入学成绩与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['辍学率', '毕业率'], top: 'bottom' },
+                    xAxis: { type: 'category', data: data.map(item => item.AdmissionGrade) },
+                    yAxis: { type: 'value', name: '百分比 (%)' },
+                    series: [
+                        { name: '辍学率', type: 'bar', data: data.map(item => item.dropout_rate) },
+                        { name: '毕业率', type: 'bar', data: data.map(item => 100 - item.dropout_rate) }
+                    ]
+                };
+                initChart('chart2', option);
+            });
+
+        // 图表3: 第一、二学期成绩与学业结果的关系
+        fetch('j3.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = [...new Set(data.map(item => item.Target))];
+                const firstSemGrades = categories.map(cat => {
+                    return data.filter(item => item.Target === cat).map(item => item.FirstSemGrade);
+                });
+                const secondSemGrades = categories.map(cat => {
+                    return data.filter(item => item.Target === cat).map(item => item.SecondSemGrade);
+                });
+        
+                var option = {
+                    title: { text: '第一、二学期成绩与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    xAxis: { type: 'category', data: categories, name: '学业结果' },
+                    yAxis: { type: 'value', name: '成绩' },
+                    series: [
+                        {
+                            name: '第一学期平均成绩',
+                            type: 'boxplot',
+                            data: firstSemGrades.map(grades => [
+                                Math.min(...grades),
+                                d3.quantile(grades, 0.25),
+                                d3.median(grades),
+                                d3.quantile(grades, 0.75),
+                                Math.max(...grades)
+                            ]),
+                            itemStyle: {
+                                color: '#87CEFA'
+                            }
+                        },
+                        {
+                            name: '第二学期平均成绩',
+                            type: 'boxplot',
+                            data: secondSemGrades.map(grades => [
+                                Math.min(...grades),
+                                d3.quantile(grades, 0.25),
+                                d3.median(grades),
+                                d3.quantile(grades, 0.75),
+                                Math.max(...grades)
+                            ]),
+                            itemStyle: {
+                                color: '#FF69B4'
+                            }
+                        }
+                    ]
+                };
+                initChart('chart3', option);
+            });
+
+
+        // 图表4: 奖学金与学业结果的关系
+        fetch('j4.json')
+            .then(response => response.json())
+            .then(data => {
+                var option = {
+                    title: {
+                        text: '奖学金与学业结果的关系',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['辍学率'],
+                        top: 'bottom'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: data.map(item => item.HasScholarship ? '有奖学金' : '无奖学金')
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '辍学率 (%)'
+                    },
+                    series: [
+                        {
+                            name: '辍学率',
+                            type: 'bar',
+                            data: data.map(item => item.DropoutRate),
+                            itemStyle: {
+                                color: '#FFA500'
+                            }
+                        }
+                    ]
+                };
+                initChart('chart4', option);
+            });
+
+        // 图表5: 学生年龄与学业结果的关系
+        fetch('j5.json')
+            .then(response => response.json())
+            .then(data => {
+                var option = {
+                    title: { text: '学生年龄与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: data.map(item => item.Age) },
+                    yAxis: [
+                        { type: 'value', name: '人数' },
+                        { type: 'value', name: '辍学率 (%)', max: 100 }
+                    ],
+                    series: [
+                        { name: '毕业人数', type: 'bar', data: data.map(item => item.TotalCount - item.DropoutCount) },
+                        { name: '辍学人数', type: 'bar', data: data.map(item => item.DropoutCount) },
+                        { name: '辍学率', type: 'line', yAxisIndex: 1, data: data.map(item => item.DropoutRate), smooth: true }
+                    ]
+                };
+                initChart('chart5', option);
+            });
+
+        // 图表6: 母亲学历与学业结果的关系
+        fetch('j6.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.map(item => item.MotherQualification);
+                const dropoutRates = data.map(item => item.dropout_rate);
+        
+                var option = {
+                    title: { text: '母亲学历与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['毕业人数', '辍学人数', '辍学率'], top: 'bottom' },
+                    xAxis: { type: 'category', data: categories },
+                    yAxis: [
+                        { type: 'value', name: '人数' },
+                        { type: 'value', name: '辍学率 (%)', position: 'right' }
+                    ],
+                    series: [
+                        { name: '毕业人数', type: 'bar', data: data.map(item => item.total_count - item.dropout_count) },
+                        { name: '辍学人数', type: 'bar', data: data.map(item => item.dropout_count) },
+                        {
+                            name: '辍学率',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: dropoutRates,
+                            smooth: true,
+                            itemStyle: { color: '#FF6347' }
+                        }
+                    ]
+                };
+                initChart('chart6', option);
+            });
+        
+        // 图表7: 父亲学历与学业结果的关系
+        fetch('j7.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.map(item => item.FatherQualification);
+                const dropoutRates = data.map(item => item.dropout_rate);
+        
+                var option = {
+                    title: { text: '父亲学历与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['毕业人数', '辍学人数', '辍学率'], top: 'bottom' },
+                    xAxis: { type: 'category', data: categories },
+                    yAxis: [
+                        { type: 'value', name: '人数' },
+                        { type: 'value', name: '辍学率 (%)', position: 'right' }
+                    ],
+                    series: [
+                        { name: '毕业人数', type: 'bar', data: data.map(item => item.total_count - item.dropout_count) },
+                        { name: '辍学人数', type: 'bar', data: data.map(item => item.dropout_count) },
+                        {
+                            name: '辍学率',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: dropoutRates,
+                            smooth: true,
+                            itemStyle: { color: '#FF6347' }
+                        }
+                    ]
+                };
+                initChart('chart7', option);
+            });
+        
+        // 图表8: 母亲职业与学业结果的关系
+        fetch('j8.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.map(item => item.MotherOccupation);
+                const dropoutRates = data.map(item => (item.Dropout / (item.Dropout + item.Graduate + item.Enrolled)) * 100);
+        
+                var option = {
+                    title: { text: '母亲职业与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['毕业', '辍学', '辍学率'], top: 'bottom' },
+                    xAxis: { type: 'category', data: categories },
+                    yAxis: [
+                        { type: 'value', name: '人数' },
+                        { type: 'value', name: '辍学率 (%)', position: 'right' }
+                    ],
+                    series: [
+                        {
+                            name: '毕业',
+                            type: 'bar',
+                            data: data.map(item => item.Graduate),
+                            itemStyle: { color: '#87CEFA' }
+                        },
+                        {
+                            name: '辍学',
+                            type: 'bar',
+                            data: data.map(item => item.Dropout),
+                            itemStyle: { color: '#FF69B4' }
+                        },
+                        {
+                            name: '辍学率',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: dropoutRates,
+                            smooth: true,
+                            itemStyle: { color: '#FF6347' }
+                        }
+                    ]
+                };
+                initChart('chart8', option);
+            });
+        
+        // 图表9: 父亲职业与学业结果的关系
+        fetch('j9.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.map(item => item.FatherOccupation);
+                const dropoutRates = data.map(item => (item.Dropout / (item.Graduate + item.Dropout + item.Enrolled)) * 100);
+        
+                var option = {
+                    title: { text: '父亲职业与学业结果的关系', left: 'center' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: ['毕业', '辍学', '辍学率'], top: 'bottom' },
+                    xAxis: { type: 'category', data: categories },
+                    yAxis: [
+                        { type: 'value', name: '人数' },
+                        { type: 'value', name: '辍学率 (%)', position: 'right' }
+                    ],
+                    series: [
+                        {
+                            name: '毕业',
+                            type: 'bar',
+                            data: data.map(item => item.Graduate),
+                            itemStyle: { color: '#20B2AA' }
+                        },
+                        {
+                            name: '辍学',
+                            type: 'bar',
+                            data: data.map(item => item.Dropout),
+                            itemStyle: { color: '#FF6347' }
+                        },
+                        {
+                            name: '辍学率',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: dropoutRates,
+                            smooth: true,
+                            itemStyle: { color: '#FF6347' }
+                        }
+                    ]
+                };
+                initChart('chart9', option);
+            });
+
+
+        // 图表10: 课程数量与学期成绩的关系
+        fetch('j10.json')
+            .then(response => response.json())
+            .then(data => {
+                var option = {
+                    title: {
+                        text: '课程数量与学期成绩的关系',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['平均成绩'],
+                        top: 'bottom'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: data.map(item => item.Units)
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '平均成绩'
+                    },
+                    series: [
+                        {
+                            name: '平均成绩',
+                            type: 'line',
+                            data: data.map(item => item.AverageGrade),
+                            smooth: true,
+                            lineStyle: {
+                                color: '#FF8C00'
+                            },
+                            areaStyle: {}
+                        }
+                    ]
+                };
+                initChart('chart10', option);
+            });
+
+        // 图表11: 学业结果与失业率的关系
+        fetch('j11.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = [...new Set(data.map(item => item.Target))];
+                const unemploymentRates = categories.map(cat => {
+                    return data.filter(item => item.Target === cat).map(item => item.UnemploymentRate);
+                });
+        
+                var option = {
+                    title: { text: '学业结果与失业率的关系', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    xAxis: { type: 'category', data: categories, name: '学业结果' },
+                    yAxis: { type: 'value', name: '失业率 (%)' },
+                    series: [
+                        {
+                            name: '失业率',
+                            type: 'boxplot',
+                            data: unemploymentRates.map(rate => [
+                                Math.min(...rate), 
+                                d3.quantile(rate, 0.25), 
+                                d3.median(rate), 
+                                d3.quantile(rate, 0.75), 
+                                Math.max(...rate)
+                            ]),
+                            itemStyle: {
+                                color: '#FF6347'
+                            }
+                        }
+                    ]
+                };
+                initChart('chart11', option);
+            });
+        
+        // 图表12: 学业结果与通货膨胀率的关系
+        fetch('j12.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = [...new Set(data.map(item => item.Target))];
+                const inflationRates = categories.map(cat => {
+                    return data.filter(item => item.Target === cat).map(item => item.InflationRate);
+                });
+        
+                var option = {
+                    title: { text: '学业结果与通货膨胀率的关系', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    xAxis: { type: 'category', data: categories, name: '学业结果' },
+                    yAxis: { type: 'value', name: '通货膨胀率 (%)' },
+                    series: [
+                        {
+                            name: '通货膨胀率',
+                            type: 'boxplot',
+                            data: inflationRates.map(rate => [
+                                Math.min(...rate), 
+                                d3.quantile(rate, 0.25), 
+                                d3.median(rate), 
+                                d3.quantile(rate, 0.75), 
+                                Math.max(...rate)
+                            ]),
+                            itemStyle: {
+                                color: '#FFA500'
+                            }
+                        }
+                    ]
+                };
+                initChart('chart12', option);
+            });
+        
+        // 图表13: 学业结果与GDP的关系
+        fetch('j13.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = [...new Set(data.map(item => item.Target))];
+                const gdps = categories.map(cat => {
+                    return data.filter(item => item.Target === cat).map(item => item.GDP);
+                });
+        
+                var option = {
+                    title: { text: '学业结果与GDP的关系', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    xAxis: { type: 'category', data: categories, name: '学业结果' },
+                    yAxis: { type: 'value', name: 'GDP' },
+                    series: [
+                        {
+                            name: 'GDP',
+                            type: 'boxplot',
+                            data: gdps.map(gdp => [
+                                Math.min(...gdp), 
+                                d3.quantile(gdp, 0.25), 
+                                d3.median(gdp), 
+                                d3.quantile(gdp, 0.75), 
+                                Math.max(...gdp)
+                            ]),
+                            itemStyle: {
+                                color: '#20B2AA'
+                            }
+                        }
+                    ]
+                };
+                initChart('chart13', option);
+            });
+    </script>
+</body>
+</html>
