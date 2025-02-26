@@ -7,7 +7,7 @@
 使用jQuery来实现导航栏交互功能
 实现了一键导入用户信息以及一键分配学生毕业选题功能减少用户重复性工作
 实体E-R图：
-![实体E-R图](https://github.com/Camel303/graduation-project-management-system/edit/master/picture/1.png)
+![实体E-R图](https://github.com/Camel303/graduation-project-management-system/edit/master/picture/1.jpg)
 
 
 代码片段：
