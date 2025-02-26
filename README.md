@@ -1,18 +1,19 @@
-基于J2EE的毕业设计管理系统
+# 基于J2EE的毕业设计管理系统
 
-简介：基于毕业设计的使用场景，设计的一个毕业设计管理系统，一般工作流程如下：
+## 简介
+基于毕业设计的使用场景，设计的一个毕业设计管理系统，一般工作流程如下：
 ![工作流程](https://github.com/Camel303/graduation-project-management-system/blob/master/picture/1.jpg)
 技术栈：JAVA + html/html5 + JavaScript + css + SQL Server +jQuery
-技术亮点：
+## 技术亮点
 使用jQuery来实现导航栏交互功能
 实现了一键导入用户信息以及一键分配学生毕业选题功能减少用户重复性工作
 实体E-R图：
 ![实体E-R图](https://github.com/Camel303/graduation-project-management-system/blob/master/picture/2.jpg)
 
 
-代码片段：
+## 代码片段
 ![代码片段](https://github.com/Camel303/graduation-project-management-system/blob/master/picture/3.jpg)
-成果展示：
+## 成果展示
 
 ![学生查看选题界面](https://github.com/Camel303/graduation-project-management-system/blob/master/picture/4.jpg)
 图 1 学生查看选题界面
